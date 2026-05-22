@@ -12,4 +12,15 @@ services:
         value: "3.13"
       - key: SLEEPER_LEAGUE_ID
         value: "1312180583626969088"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: sleeper-cache
+          property: connectionString
     autoDeploy: true
+
+  - type: keyvalue
+    name: sleeper-cache
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
