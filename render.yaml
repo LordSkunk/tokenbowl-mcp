@@ -2,6 +2,7 @@ services:
   - type: web
     name: sleeper-mcp
     runtime: python
+    plan: free
     buildCommand: "pip install uv && uv sync"
     startCommand: "uv run python build_cache.py; uv run python sleeper_mcp.py http"
     envVars:
@@ -10,6 +11,6 @@ services:
       - key: PYTHON_VERSION
         value: "3.13"
       - key: SLEEPER_LEAGUE_ID
-        value: "1266471057523490816"
+        value: "1312180583626969088"
     autoDeploy: true
     healthCheckPath: /health
