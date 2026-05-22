@@ -121,16 +121,13 @@ async def set_active_league(league_id: str) -> Dict[str, Any]:
     Args:
         league_id: The Sleeper league_id to make active.
     """
-    global LEAGUE_ID
-    LEAGUE_ID = str(league_id).strip()
-    logger.info(f"Active league switched to {LEAGUE_ID}")
-    name = None
-    try:
-        info = await fetch_league_info(LEAGUE_ID, BASE_URL)
-        name = info.get("name") if isinstance(info, dict) else None
-    except Exception as e:
-        logger.warning(f"set_active_league: could not fetch league info: {e}")
-    return {"active_league_id": LEAGUE_ID, "league_name": name}@mcp.tool()
+    new_id = str(league_id).strip()
+    globals()["LEAGUE_ID"] = new_id
+    logger.info(f"Active league switched to {new_id}")
+    return {"active_league_id": new_id, "status": "ok"}
+
+
+@mcp.tool()
 @log_mcp_tool
 async def get_league_info() -> Dict[str, Any]:
     """Get comprehensive information about the Token Bowl fantasy football league.
