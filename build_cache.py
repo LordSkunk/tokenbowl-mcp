@@ -837,10 +837,20 @@ def cache_players():
 
         # Fetch all data
         sleeper_players = fetch_sleeper_players()
-        ffnerd_players = fetch_fantasy_nerds_players()
-        rankings, injuries, news = fetch_fantasy_nerds_data()
-        ros = fetch_fantasy_nerds_ros()  # Fetch ROS projections
-        bye_weeks_map = fetch_bye_weeks()  # Fetch bye weeks
+
+        # Fantasy Nerds enrichment is optional. Skip it entirely when no API
+        # key is set, so the player-name cache still builds from Sleeper alone.
+        if os.getenv("FFNERD_API_KEY"):
+            ffnerd_players = fetch_fantasy_nerds_players()
+            rankings, injuries, news = fetch_fantasy_nerds_data()
+            ros = fetch_fantasy_nerds_ros()
+            bye_weeks_map = fetch_bye_weeks()
+        else:
+            print("FFNERD_API_KEY not set; skipping Fantasy Nerds enrichment.")
+            ffnerd_players = []
+            rankings, injuries, news = {}, {}, []
+            ros = {}
+            bye_weeks_map = {}
 
         # Get current NFL week and fetch stats
         current_week, season = fetch_current_nfl_week()
