@@ -37,7 +37,7 @@ def validate_roster_id(roster_id: Union[int, str]) -> int:
             f"Roster ID must be an integer between 1 and 10, got {type(roster_id).__name__}: {roster_id}"
         ) from e
 
-    if not 1 <= roster_id_int <= 10:
+    if not 1 <= roster_id_int <= 12:
         raise ValueError(f"Roster ID must be between 1 and 10, got {roster_id_int}")
 
     return roster_id_int
