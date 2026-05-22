@@ -78,6 +78,60 @@ BASE_URL = "https://api.sleeper.app/v1"
 
 @mcp.tool()
 @log_mcp_tool
+async def list_my_leagues(username_or_id: str, season: str = "2026") -> Dict[str, Any]:
+    """List all of a Sleeper user's NFL leagues for a season (name + league_id).
+
+    Use a returned league_id with set_active_league() to point the connector at it.
+
+    Args:
+        username_or_id: Sleeper username (e.g. "LordSkunk") or numeric user_id.
+        season: NFL season year (default "2026").
+    """
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        u = await client.get(f"{BASE_URL}/user/{username_or_id}")
+        u.raise_for_status()
+        uid = u.json().get("user_id")
+        r = await client.get(f"{BASE_URL}/user/{uid}/leagues/nfl/{season}")
+        r.raise_for_status()
+        leagues = r.json() or []
+    return {
+        "user_id": uid,
+        "season": season,
+        "active_league_id": LEAGUE_ID,
+        "leagues": [
+            {
+                "name": lg.get("name"),
+                "league_id": lg.get("league_id"),
+                "total_rosters": lg.get("total_rosters"),
+            }
+            for lg in leagues
+        ],
+    }
+
+
+@mcp.tool()
+@log_mcp_tool
+async def set_active_league(league_id: str) -> Dict[str, Any]:
+    """Switch which Sleeper league ALL league tools target for the rest of the session.
+
+    After this, get_league_rosters, get_roster, get_league_users, get_league_transactions,
+    get_league_traded_picks, get_league_drafts, etc. all operate on the given league_id.
+    Use list_my_leagues() to find league_ids. Resets to the default on server restart.
+
+    Args:
+        league_id: The Sleeper league_id to make active.
+    """
+    global LEAGUE_ID
+    LEAGUE_ID = str(league_id).strip()
+    logger.info(f"Active league switched to {LEAGUE_ID}")
+    name = None
+    try:
+        info = await fetch_league_info(LEAGUE_ID, BASE_URL)
+        name = info.get("name") if isinstance(info, dict) else None
+    except Exception as e:
+        logger.warning(f"set_active_league: could not fetch league info: {e}")
+    return {"active_league_id": LEAGUE_ID, "league_name": name}@mcp.tool()
+@log_mcp_tool
 async def get_league_info() -> Dict[str, Any]:
     """Get comprehensive information about the Token Bowl fantasy football league.
 
